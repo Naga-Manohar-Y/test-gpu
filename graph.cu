@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "graph.h"
+#include <cuda_runtime.h>
 
 // #include <cuda_runtime.h>
 #include <cassert>
