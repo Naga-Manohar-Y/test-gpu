@@ -42,6 +42,10 @@ public:
 
     // Ricci curvature calculation method
     void computeRicciCurvature(float alpha, float* atd_results, float* ricci_results);
+
+    // Getter methods for n and m
+    ui getN() const { return n; }
+    ept getM() const { return m; }
 };
 
 #endif
