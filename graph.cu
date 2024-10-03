@@ -63,6 +63,8 @@ Graph::~Graph() {
     delete[] neighbors;
     delete[] degree;
     delete[] reverse;
+	delete[] apsp;
+    cudaFree(d_apsp);
 }
 
 void Graph::readTextFile(const char* filepath) {
@@ -156,6 +158,9 @@ void Graph::readBinaryFile(const char* filepath) {
     std::cout << std::endl;
 
 	// After reading, allocate GPU memory and copy data
+
+	// Compute APSP after reading the graph
+    computeAPSP();
 
 	mallocGraphGPUMemory();
     copyToGPU();

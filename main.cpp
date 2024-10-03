@@ -16,26 +16,18 @@ int main() {
     Graph g2(directory);
     g2.readBinaryFile("test.bin");
     
-    // Compute Ricci curvature
-    float* atd_results = new float[g2.getN()];
-    float* ricci_results = new float[g2.getM()];
-    float alpha = 0.5; // Set your desired alpha value
-    g2.computeRicciCurvature(alpha, atd_results, ricci_results);
-
-    // Print results (first few elements)
-    std::cout << "ATD Results (first 10):" << std::endl;
-    for (int i = 0; i < std::min(10u, g2.getN()); i++) {
-        std::cout << "Node " << i << ": " << atd_results[i] << std::endl;
-    }
-
-    std::cout << "\nRicci Curvature Results (first 10):" << std::endl;
-    for (int i = 0; i < std::min(10u, static_cast<unsigned int>(g2.getM())); i++) {
-        std::cout << "Edge " << i << ": " << ricci_results[i] << std::endl;
+    // APSP is computed automatically in readBinaryFile
+    
+    // Print a sample of APSP results
+    std::cout << "APSP Results (first 5x5 submatrix):" << std::endl;
+    for (unsigned int i = 0; i < std::min(5u, g2.getN()); i++) {
+        for (unsigned int j = 0; j < std::min(5u, g2.getN()); j++) {
+            std::cout << g2.getAPSP(i, j) << "\t";
+        }
+        std::cout << std::endl;
     }
 
     // Clean up
-    delete[] atd_results;
-    delete[] ricci_results;
     g2.freeGraphGPUMemory();
     
     return 0;

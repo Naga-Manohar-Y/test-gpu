@@ -18,6 +18,9 @@ private:
     ui *degree; // degree of each node
     ui *reverse;
 
+    float *weights; // edge weights
+    float *apsp; // all-pairs shortest paths
+
     void readDIMACS2Text(const char* filepath);
     void readRawSNAPText(const char* filepath);
 
@@ -25,6 +28,9 @@ private:
     ept *d_neighbors_offset;
     ui *d_neighbors;
     ui *d_degree;
+
+    float *d_weights;
+    float *d_apsp;
 
 public:
     Graph(const char *_dir);
@@ -40,8 +46,15 @@ public:
     void copyToGPU();
     void copyFromGPU();
 
+    // APSP calculation method
+    void computeAPSP();
+
+    float getAPSP(unsigned int i, unsigned int j) const {
+        return apsp[i * n + j];
+    }
+
     // Ricci curvature calculation method
-    void computeRicciCurvature(float alpha, float* atd_results, float* ricci_results);
+    // void computeRicciCurvature(float alpha, float* atd_results, float* ricci_results);
 
     // Getter methods for n and m
     ui getN() const { return n; }

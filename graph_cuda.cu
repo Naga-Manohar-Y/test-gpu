@@ -1,40 +1,59 @@
 #include "graph.h"
-// #include <cuda_runtime.h>
+#include <cuda_runtime.h>
+#include <device_launch_parameters.h>
+#include <limits>
 
-__global__ void computeATDandRicciKernel(unsigned int n, unsigned int* degree, ept* neighbors_offset, 
-                                         unsigned int* neighbors, float* atd_results, float* ricci_results, float alpha) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < n) {
-        ept start = neighbors_offset[idx];
-        ept end = neighbors_offset[idx + 1];
-        float atd_sum = 0.0f;
+__global__ void floyd_warshall_kernel(float* dist, int k, int n) {
+    int i = blockIdx.y * blockDim.y + threadIdx.y;
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
 
-        for (ept j = start; j < end; j++) {
-            unsigned int neighbor = neighbors[j];
-            // Simplified ATD calculation
-            float avg_degree = (degree[idx] + degree[neighbor]) / 2.0f;
-            float ricci = 1.0f - (avg_degree / 1.0f);  // assuming weight = 1 for simplification
-            ricci_results[j] = ricci;
-            atd_sum += ricci;
+    if (i < n && j < n) {
+        int ij = i * n + j;
+        int ik = i * n + k;
+        int kj = k * n + j;
+        float alt = dist[ik] + dist[kj];
+        if (alt < dist[ij]) {
+            dist[ij] = alt;
         }
-        atd_results[idx] = atd_sum / (end - start);
     }
 }
 
-void Graph::computeRicciCurvature(float alpha, float* atd_results, float* ricci_results) {
-    float *d_atd_results, *d_ricci_results;
-    cudaMalloc(&d_atd_results, n * sizeof(float));
-    cudaMalloc(&d_ricci_results, m * sizeof(float));
+void Graph::computeAPSP() {
+    // Allocate host memory for APSP
+    apsp = new float[n * n];
+    
+    // Initialize APSP matrix
+    for (ui i = 0; i < n; i++) {
+        for (ui j = 0; j < n; j++) {
+            apsp[i * n + j] = (i == j) ? 0.0f : std::numeric_limits<float>::infinity();
+        }
+    }
 
-    int blockSize = 256;
-    int numBlocks = (n + blockSize - 1) / blockSize;
+    // Set initial distances based on graph structure
+    for (ui i = 0; i < n; i++) {
+        ept start = neighbors_offset[i];
+        ept end = neighbors_offset[i + 1];
+        for (ept j = start; j < end; j++) {
+            ui neighbor = neighbors[j];
+            apsp[i * n + neighbor] = 1.0f; // Assuming unit weight
+        }
+    }
 
-    computeATDandRicciKernel<<<numBlocks, blockSize>>>(n, d_degree, d_neighbors_offset, d_neighbors, 
-                                                       d_atd_results, d_ricci_results, alpha);
+    // Allocate device memory for APSP
+    cudaMalloc(&d_apsp, n * n * sizeof(float));
+    cudaMemcpy(d_apsp, apsp, n * n * sizeof(float), cudaMemcpyHostToDevice);
 
-    cudaMemcpy(atd_results, d_atd_results, n * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(ricci_results, d_ricci_results, m * sizeof(float), cudaMemcpyDeviceToHost);
+    // Set up grid and block dimensions
+    dim3 block_dim(32, 32);
+    dim3 grid_dim((n + block_dim.x - 1) / block_dim.x, 
+                  (n + block_dim.y - 1) / block_dim.y);
 
-    cudaFree(d_atd_results);
-    cudaFree(d_ricci_results);
+    // Run Floyd-Warshall algorithm
+    for (ui k = 0; k < n; k++) {
+        floyd_warshall_kernel<<<grid_dim, block_dim>>>(d_apsp, k, n);
+        cudaDeviceSynchronize();
+    }
+
+    // Copy result back to host
+    cudaMemcpy(apsp, d_apsp, n * n * sizeof(float), cudaMemcpyDeviceToHost);
 }
