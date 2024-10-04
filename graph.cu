@@ -55,7 +55,8 @@ static std::string integer_to_string(long long number) {
 }
 //----------------------------------------------------------------------
 
-Graph::Graph(const char *_dir) : dir(_dir), n(0), m(0), neighbors_offset(nullptr), neighbors(nullptr), degree(nullptr),reverse(nullptr){
+Graph::Graph(const char *_dir) : dir(_dir), n(0), m(0), neighbors_offset(nullptr),
+neighbors(nullptr), degree(nullptr),reverse(nullptr), weights(nullptr), apsp(nullptr), d_apsp(nullptr){
 }
 
 Graph::~Graph() {
@@ -64,7 +65,9 @@ Graph::~Graph() {
     delete[] degree;
     delete[] reverse;
 	delete[] apsp;
+	delete[] weights;
     // cudaFree(d_apsp);
+	freeGraphGPUMemory();
 }
 
 void Graph::readTextFile(const char* filepath) {
