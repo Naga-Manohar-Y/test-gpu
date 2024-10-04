@@ -9,25 +9,34 @@ int main() {
         Graph g(directory);
         
         // Read the text file
-        g.readTextFile("test_gh.txt");
+        g.readTextFile("test_gh2.txt");
         
         // Write to a binary file
-        g.writeBinaryFile("test.bin");
+        g.writeBinaryFile("test2.bin");
         
         // Read the binary file back (to test)
         Graph g2(directory);
-        g2.readBinaryFile("test.bin");
+        g2.readBinaryFile("test2.bin");
         
         // APSP is computed automatically in readBinaryFile
-        
+
         // Print a sample of APSP results
-        std::cout << "APSP Results (first 5x5 submatrix):" << std::endl;
-        for (unsigned int i = 0; i < std::min(5u, g2.getN()); i++) {
-            for (unsigned int j = 0; j < std::min(5u, g2.getN()); j++) {
+        std::cout << "APSP Results (full matrix):" << std::endl;
+        for (unsigned int i = 0; i < g2.getN(); i++) {
+            for (unsigned int j = 0; j < g2.getN(); j++) {
                 std::cout << g2.getAPSP(i, j) << "\t";
             }
             std::cout << std::endl;
         }
+        
+        // Print a sample of APSP results
+        // std::cout << "APSP Results (first 5x5 submatrix):" << std::endl;
+        // for (unsigned int i = 0; i < std::min(5u, g2.getN()); i++) {
+        //     for (unsigned int j = 0; j < std::min(5u, g2.getN()); j++) {
+        //         std::cout << g2.getAPSP(i, j) << "\t";
+        //     }
+        //     std::cout << std::endl;
+        // }
 
         // Clean up is handled automatically by destructors
     } catch (const std::exception& e) {
