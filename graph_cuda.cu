@@ -40,7 +40,7 @@ void Graph::computeAPSP() {
     }
 
     // Allocate device memory for APSP
-    cudaMalloc(&d_apsp, n * n * sizeof(float));
+    // cudaMalloc(&d_apsp, n * n * sizeof(float));
     cudaMemcpy(d_apsp, apsp, n * n * sizeof(float), cudaMemcpyHostToDevice);
 
     // Set up grid and block dimensions

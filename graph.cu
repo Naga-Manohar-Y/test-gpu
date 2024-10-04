@@ -303,11 +303,23 @@ void Graph::mallocGraphGPUMemory() {
 }
 
 void Graph::freeGraphGPUMemory() {
-    cudaFree(d_neighbors_offset);
-    cudaFree(d_neighbors);
-    cudaFree(d_degree);
-	cudaFree(d_weights);
-    cudaFree(d_apsp);
+
+	if (d_neighbors_offset) cudaFree(d_neighbors_offset);
+    if (d_neighbors) cudaFree(d_neighbors);
+    if (d_degree) cudaFree(d_degree);
+    if (d_weights) cudaFree(d_weights);
+    if (d_apsp) cudaFree(d_apsp);
+
+    d_neighbors_offset = nullptr;
+    d_neighbors = nullptr;
+    d_degree = nullptr;
+    d_weights = nullptr;
+    d_apsp = nullptr;
+    // cudaFree(d_neighbors_offset);
+    // cudaFree(d_neighbors);
+    // cudaFree(d_degree);
+	// cudaFree(d_weights);
+    // cudaFree(d_apsp);
 }
 
 void Graph::copyToGPU() {
