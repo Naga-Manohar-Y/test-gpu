@@ -18,6 +18,8 @@ private:
     ui *degree; // degree of each node
     ui *reverse;
 
+    float* apsp;
+
     float* weights;  // Array to store edge weights
     
 
