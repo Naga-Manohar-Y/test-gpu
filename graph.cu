@@ -159,6 +159,10 @@ void Graph::readBinaryFile(const char* filepath) {
 
 	// After reading, allocate GPU memory and copy data
 
+	// Assigning edge weights
+
+	assignEdgeWeights();
+
 	// Compute APSP after reading the graph
     computeAPSP();
 
@@ -294,22 +298,36 @@ void Graph::mallocGraphGPUMemory() {
     cudaMalloc(&d_neighbors_offset, (n + 1) * sizeof(ept));
     cudaMalloc(&d_neighbors, m * sizeof(ui));
     cudaMalloc(&d_degree, n * sizeof(ui));
+	cudaMalloc(&d_weights, m * sizeof(float));
+    cudaMalloc(&d_apsp, n * n * sizeof(float));
 }
 
 void Graph::freeGraphGPUMemory() {
     cudaFree(d_neighbors_offset);
     cudaFree(d_neighbors);
     cudaFree(d_degree);
+	cudaFree(d_weights);
+    cudaFree(d_apsp);
 }
 
 void Graph::copyToGPU() {
     cudaMemcpy(d_neighbors_offset, neighbors_offset, (n + 1) * sizeof(ept), cudaMemcpyHostToDevice);
     cudaMemcpy(d_neighbors, neighbors, m * sizeof(ui), cudaMemcpyHostToDevice);
     cudaMemcpy(d_degree, degree, n * sizeof(ui), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_weights, weights, m * sizeof(float), cudaMemcpyHostToDevice);
 }
 
 void Graph::copyFromGPU() {
     cudaMemcpy(neighbors_offset, d_neighbors_offset, (n + 1) * sizeof(ept), cudaMemcpyDeviceToHost);
     cudaMemcpy(neighbors, d_neighbors, m * sizeof(ui), cudaMemcpyDeviceToHost);
     cudaMemcpy(degree, d_degree, n * sizeof(ui), cudaMemcpyDeviceToHost);
+	cudaMemcpy(weights, d_weights, m * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(apsp, d_apsp, n * n * sizeof(float), cudaMemcpyDeviceToHost);
+}
+
+void Graph::assignEdgeWeights() {
+    weights = new float[m];
+    for (ept i = 0; i < m; ++i) {
+        weights[i] = 1.0f;  // Assign weight 1 to each edge
+    }
 }

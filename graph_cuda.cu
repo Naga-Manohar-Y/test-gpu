@@ -29,13 +29,13 @@ void Graph::computeAPSP() {
         }
     }
 
-    // Set initial distances based on graph structure
+    // Set initial distances based on graph structure and weights
     for (ui i = 0; i < n; i++) {
         ept start = neighbors_offset[i];
         ept end = neighbors_offset[i + 1];
         for (ept j = start; j < end; j++) {
             ui neighbor = neighbors[j];
-            apsp[i * n + neighbor] = 1.0f; // Assuming unit weight
+            apsp[i * n + neighbor] = weights[j];
         }
     }
 
@@ -56,4 +56,12 @@ void Graph::computeAPSP() {
 
     // Copy result back to host
     cudaMemcpy(apsp, d_apsp, n * n * sizeof(float), cudaMemcpyDeviceToHost);
+
+   
+
+    // Check for CUDA errors
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        fprintf(stderr, "CUDA error: %s\n", cudaGetErrorString(err));
+    }
 }

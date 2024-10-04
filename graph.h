@@ -18,8 +18,9 @@ private:
     ui *degree; // degree of each node
     ui *reverse;
 
-    float *weights; // edge weights
-    float *apsp; // all-pairs shortest paths
+    float* weights;  // Array to store edge weights
+    
+
 
     void readDIMACS2Text(const char* filepath);
     void readRawSNAPText(const char* filepath);
@@ -29,7 +30,8 @@ private:
     ui *d_neighbors;
     ui *d_degree;
 
-    float *d_weights;
+    float* d_weights;  // GPU memory for weights
+
     float *d_apsp;
 
 public:
@@ -47,6 +49,7 @@ public:
     void copyFromGPU();
 
     // APSP calculation method
+    void assignEdgeWeights();
     void computeAPSP();
 
     float getAPSP(unsigned int i, unsigned int j) const {
