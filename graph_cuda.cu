@@ -3,6 +3,8 @@
 #include <device_launch_parameters.h>
 #include <limits>
 
+#include "graph_cuda.h"
+
 #define BLOCK_SIZE 32
 
 __global__ void floyd_warshall_kernel(float* dist, int k, int n) {

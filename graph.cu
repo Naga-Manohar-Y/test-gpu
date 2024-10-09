@@ -1,6 +1,11 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "graph.h"
+#include "graph_cuda.h"
+
 #include <cuda_runtime.h>
+#include <device_launch_parameters.h>
+
+
 
 // #include <cuda_runtime.h>
 #include <cassert>
