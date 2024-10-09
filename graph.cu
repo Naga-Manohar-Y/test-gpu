@@ -361,10 +361,20 @@ void Graph::assignEdgeWeights() {
 }
 
 void Graph::computeATD(float alpha) {
+    cudaError_t err;
 
+    // Check if atd_results is already allocated
+    if (atd_results == nullptr) {
+        atd_results = new float[n * n];
+    }
 
-     if (d_atd_results == nullptr) {
-        cudaMalloc(&d_atd_results, n * n * sizeof(float));
+    // Check if d_atd_results is already allocated
+    if (d_atd_results == nullptr) {
+        err = cudaMalloc(&d_atd_results, n * n * sizeof(float));
+        if (err != cudaSuccess) {
+            fprintf(stderr, "CUDA error (malloc): %s\n", cudaGetErrorString(err));
+            return;
+        }
     }
 
     // Set up grid and block dimensions
@@ -387,11 +397,6 @@ void Graph::computeATD(float alpha) {
     if (err != cudaSuccess) {
         fprintf(stderr, "CUDA error (synchronize): %s\n", cudaGetErrorString(err));
         return;
-    }
-
-	// Allocate host memory for ATD results if not already allocated
-    if (atd_results == nullptr) {
-        atd_results = new float[n * n];
     }
 
     // Copy results back to host
