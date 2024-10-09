@@ -22,6 +22,8 @@ private:
 
     float* weights;  // Array to store edge weights
     
+    float* atd_results;
+    float* d_atd_results;
 
 
     void readDIMACS2Text(const char* filepath);
@@ -58,8 +60,9 @@ public:
         return apsp[i * n + j];
     }
 
-    // Ricci curvature calculation method
-    // void computeRicciCurvature(float alpha, float* atd_results, float* ricci_results);
+    void computeATD(float alpha);
+    float getATD(unsigned int i, unsigned int j) const;
+
 
     // Getter methods for n and m
     ui getN() const { return n; }

@@ -39,6 +39,22 @@ int main() {
         // }
 
         // Clean up is handled automatically by destructors
+
+
+        // Compute ATD
+        float alpha = 0.5; // Set your desired alpha value
+        g2.computeATD(alpha);
+
+        // Print sample ATD results
+        std::cout << "ATD Results (first 5x5 submatrix):" << std::endl;
+        for (unsigned int i = 0; i < std::min(5u, g2.getN()); i++) {
+            for (unsigned int j = 0; j < std::min(5u, g2.getN()); j++) {
+                std::cout << g2.getATD(i, j) << "\t";
+            }
+            std::cout << std::endl;
+        }
+
+
     } catch (const std::exception& e) {
         std::cerr << "An error occurred: " << e.what() << std::endl;
         return 1;

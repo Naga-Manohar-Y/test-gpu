@@ -86,3 +86,33 @@ void Graph::computeAPSP() {
         fprintf(stderr, "CUDA error: %s\n", cudaGetErrorString(err));
     }
 }
+
+__global__ void compute_atd_kernel(float* apsp, ui* neighbors, ept* neighbors_offset, 
+                                   float* atd_results, ui n, float alpha) {
+    int i = blockIdx.x;
+    int j = blockIdx.y;
+    
+    if (i < n && j < n && i != j) {
+        ept start_i = neighbors_offset[i];
+        ept end_i = neighbors_offset[i + 1];
+        ept start_j = neighbors_offset[j];
+        ept end_j = neighbors_offset[j + 1];
+        
+        ui source_nbr_count = end_i - start_i;
+        ui target_nbr_count = end_j - start_j;
+        
+        float share = (1.0f - alpha) / (source_nbr_count * target_nbr_count);
+        float cost_nbr = 0.0f;
+        
+        for (ept src = start_i; src < end_i; src++) {
+            for (ept tgt = start_j; tgt < end_j; tgt++) {
+                ui src_node = neighbors[src];
+                ui tgt_node = neighbors[tgt];
+                cost_nbr += apsp[src_node * n + tgt_node] * share;
+            }
+        }
+        
+        float cost_self = alpha * apsp[i * n + j];
+        atd_results[i * n + j] = cost_nbr + cost_self;
+    }
+}

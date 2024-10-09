@@ -66,6 +66,7 @@ Graph::~Graph() {
     delete[] reverse;
 	delete[] apsp;
 	delete[] weights;
+	delete[] atd_results;
     // cudaFree(d_apsp);
 	freeGraphGPUMemory();
 }
@@ -303,6 +304,8 @@ void Graph::mallocGraphGPUMemory() {
     cudaMalloc(&d_degree, n * sizeof(ui));
 	cudaMalloc(&d_weights, m * sizeof(float));
     // cudaMalloc(&d_apsp, n * n * sizeof(float));
+
+	cudaMalloc(&d_atd_results, n * n * sizeof(float));
 }
 
 void Graph::freeGraphGPUMemory() {
@@ -312,6 +315,10 @@ void Graph::freeGraphGPUMemory() {
     if (d_degree) cudaFree(d_degree);
     if (d_weights) cudaFree(d_weights);
     if (d_apsp) cudaFree(d_apsp);
+	if (d_atd_results) cudaFree(d_atd_results);
+
+
+    d_atd_results = nullptr;
 
     d_neighbors_offset = nullptr;
     d_neighbors = nullptr;
@@ -347,3 +354,31 @@ void Graph::assignEdgeWeights() {
         weights[i] = 1.0f;  // Assign weight 1 to each edge
     }
 }
+
+void Graph::computeATD(float alpha) {
+    // Allocate memory for ATD results
+    atd_results = new float[n * n];
+    cudaMalloc(&d_atd_results, n * n * sizeof(float));
+
+    // Set up grid and block dimensions
+    dim3 grid_dim(n, n);
+    dim3 block_dim(1, 1);  // Each thread computes one ATD value
+
+    // Launch ATD kernel
+    compute_atd_kernel<<<grid_dim, block_dim>>>(d_apsp, d_neighbors, d_neighbors_offset, 
+                                                d_atd_results, n, alpha);
+
+    // Copy results back to host
+    cudaMemcpy(atd_results, d_atd_results, n * n * sizeof(float), cudaMemcpyDeviceToHost);
+
+    // Check for CUDA errors
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA error in computeATD: " << cudaGetErrorString(err) << std::endl;
+    }
+}
+
+float Graph::getATD(unsigned int i, unsigned int j) const {
+    return atd_results[i * n + j];
+}
+
