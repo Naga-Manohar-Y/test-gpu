@@ -363,16 +363,16 @@ void Graph::assignEdgeWeights() {
 void Graph::computeATD(float alpha) {
     cudaError_t err;
 
-    // Check if atd_results is already allocated
-    if (atd_results == nullptr) {
-        atd_results = new float[n * n];
-    }
+    // Print debug information
+    std::cout << "Computing ATD with n = " << n << ", alpha = " << alpha << std::endl;
+    std::cout << "Device pointers: d_apsp = " << d_apsp << ", d_neighbors = " << d_neighbors 
+              << ", d_neighbors_offset = " << d_neighbors_offset << std::endl;
 
-    // Check if d_atd_results is already allocated
+    // Allocate device memory for ATD results if not already allocated
     if (d_atd_results == nullptr) {
         err = cudaMalloc(&d_atd_results, n * n * sizeof(float));
         if (err != cudaSuccess) {
-            fprintf(stderr, "CUDA error (malloc): %s\n", cudaGetErrorString(err));
+            std::cerr << "CUDA error (malloc d_atd_results): " << cudaGetErrorString(err) << std::endl;
             return;
         }
     }
@@ -388,23 +388,30 @@ void Graph::computeATD(float alpha) {
     // Check for kernel launch errors
     err = cudaGetLastError();
     if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA error (kernel launch): %s\n", cudaGetErrorString(err));
+        std::cerr << "CUDA error (kernel launch): " << cudaGetErrorString(err) << std::endl;
         return;
     }
 
     // Synchronize device
     err = cudaDeviceSynchronize();
     if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA error (synchronize): %s\n", cudaGetErrorString(err));
+        std::cerr << "CUDA error (synchronize): " << cudaGetErrorString(err) << std::endl;
         return;
+    }
+
+    // Allocate host memory for ATD results if not already allocated
+    if (atd_results == nullptr) {
+        atd_results = new float[n * n];
     }
 
     // Copy results back to host
     err = cudaMemcpy(atd_results, d_atd_results, n * n * sizeof(float), cudaMemcpyDeviceToHost);
     if (err != cudaSuccess) {
-        fprintf(stderr, "CUDA error (memcpy to host): %s\n", cudaGetErrorString(err));
+        std::cerr << "CUDA error (memcpy to host): " << cudaGetErrorString(err) << std::endl;
         return;
     }
+
+    std::cout << "ATD computation completed successfully." << std::endl;
 }
 
 float Graph::getATD(unsigned int i, unsigned int j) const {
