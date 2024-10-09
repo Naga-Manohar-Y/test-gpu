@@ -22,7 +22,7 @@ private:
 
     float* weights;  // Array to store edge weights
     
-    float* atd_results;
+    float* atd_results; // Average transport distance
     float* d_atd_results;
 
 
