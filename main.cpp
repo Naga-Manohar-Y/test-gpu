@@ -45,6 +45,15 @@ int main() {
         float alpha = 0.5; // Set your desired alpha value
         g2.computeATD(alpha);
 
+        // Check if ATD computation was successful
+        if (g2.getATD(0, 0) == 0.0f) {
+            std::cout << "ATD computation successful." << std::endl;
+        } else {
+            std::cerr << "ATD computation may have failed." << std::endl;
+        }
+
+
+
         // Print sample ATD results
         std::cout << "ATD Results (first 5x5 submatrix):" << std::endl;
         for (unsigned int i = 0; i < std::min(5u, g2.getN()); i++) {

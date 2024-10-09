@@ -3,6 +3,8 @@
 
 #include "graph.h"
 
+// it won't show errors on nvcc compiler
+
 __global__ void floyd_warshall_kernel(float* dist, int k, int n);
 
 __global__ void compute_atd_kernel(float* apsp, ui* neighbors, ept* neighbors_offset, 

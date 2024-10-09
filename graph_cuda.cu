@@ -102,6 +102,11 @@ __global__ void compute_atd_kernel(float* apsp, ui* neighbors, ept* neighbors_of
         
         ui source_nbr_count = end_i - start_i;
         ui target_nbr_count = end_j - start_j;
+
+        if (source_nbr_count == 0 || target_nbr_count == 0) {
+            atd_results[i * n + j] = apsp[i * n + j];  // Use APSP distance if no neighbors
+            return;
+        }
         
         float share = (1.0f - alpha) / (source_nbr_count * target_nbr_count);
         float cost_nbr = 0.0f;
@@ -116,5 +121,8 @@ __global__ void compute_atd_kernel(float* apsp, ui* neighbors, ept* neighbors_of
         
         float cost_self = alpha * apsp[i * n + j];
         atd_results[i * n + j] = cost_nbr + cost_self;
+    }
+    else if (i == j) {
+        atd_results[i * n + j] = 0.0f;  // ATD to self is 0
     }
 }
