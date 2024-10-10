@@ -457,6 +457,8 @@ void Graph::computeATD(float alpha) {
     std::cout << "Grid dimensions: (" << grid_dim.x << ", " << grid_dim.y << ")" << std::endl;
     std::cout << "Block dimensions: (" << block_dim.x << ", " << block_dim.y << ")" << std::endl;
 
+	cudaMemset(d_atd_results, 0, n * n * sizeof(float));
+
     // Launch simplified kernel for testing
     compute_atd_kernel<<<grid_dim, block_dim>>>(d_atd_results, n, alpha);
 
