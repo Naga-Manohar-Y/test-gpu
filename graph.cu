@@ -371,6 +371,11 @@ void Graph::computeATD(float alpha) {
     std::cout << "Device pointers: d_apsp = " << d_apsp << ", d_neighbors = " << d_neighbors 
               << ", d_neighbors_offset = " << d_neighbors_offset << std::endl;
 
+	if (d_apsp == nullptr || d_neighbors == nullptr || d_neighbors_offset == nullptr || d_atd_results == nullptr) {
+    std::cerr << "Error: One or more device pointers are null" << std::endl;
+    return;
+}
+
     // Allocate device memory for ATD results if not already allocated
     if (d_atd_results == nullptr) {
         std::cout << "Allocating memory for d_atd_results" << std::endl;
@@ -382,8 +387,8 @@ void Graph::computeATD(float alpha) {
     }
 
     // Set up grid and block dimensions
-    dim3 grid_dim(n, n);
-    dim3 block_dim(1, 1);  // Each thread computes one ATD value
+    dim3 block_dim(32, 32);
+	dim3 grid_dim((n + block_dim.x - 1) / block_dim.x, (n + block_dim.y - 1) / block_dim.y); // Each thread computes one ATD value
     std::cout << "Grid dimensions: (" << grid_dim.x << ", " << grid_dim.y << ")" << std::endl;
     std::cout << "Block dimensions: (" << block_dim.x << ", " << block_dim.y << ")" << std::endl;
 
