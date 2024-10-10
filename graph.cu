@@ -435,10 +435,7 @@ void Graph::computeATD(float alpha) {
     cudaError_t err;
 
     std::cout << "Computing ATD with n = " << n << ", alpha = " << alpha << std::endl;
-    std::cout << "Device pointers: d_apsp = " << d_apsp << ", d_neighbors = " << d_neighbors 
-              << ", d_neighbors_offset = " << d_neighbors_offset << std::endl;
 
-    // Allocate device memory for ATD results if not already allocated
     if (d_atd_results == nullptr) {
         err = cudaMalloc(&d_atd_results, n * n * sizeof(float));
         if (err != cudaSuccess) {
@@ -447,36 +444,30 @@ void Graph::computeATD(float alpha) {
         }
     }
 
-    // Set up grid and block dimensions
     dim3 block_dim(32, 32);
     dim3 grid_dim((n + block_dim.x - 1) / block_dim.x, (n + block_dim.y - 1) / block_dim.y);
 
     std::cout << "Grid dimensions: (" << grid_dim.x << ", " << grid_dim.y << ")" << std::endl;
     std::cout << "Block dimensions: (" << block_dim.x << ", " << block_dim.y << ")" << std::endl;
 
-    // Launch simplified ATD kernel
     compute_atd_kernel<<<grid_dim, block_dim>>>(d_atd_results, n, alpha);
 
-    // Check for kernel launch errors
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         std::cerr << "CUDA error (kernel launch): " << cudaGetErrorString(err) << std::endl;
         return;
     }
 
-    // Synchronize device
     err = cudaDeviceSynchronize();
     if (err != cudaSuccess) {
         std::cerr << "CUDA error (synchronize): " << cudaGetErrorString(err) << std::endl;
         return;
     }
 
-    // Allocate host memory for ATD results if not already allocated
     if (atd_results == nullptr) {
         atd_results = new float[n * n];
     }
 
-    // Copy results back to host
     err = cudaMemcpy(atd_results, d_atd_results, n * n * sizeof(float), cudaMemcpyDeviceToHost);
     if (err != cudaSuccess) {
         std::cerr << "CUDA error (memcpy to host): " << cudaGetErrorString(err) << std::endl;
