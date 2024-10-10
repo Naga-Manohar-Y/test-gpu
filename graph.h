@@ -22,8 +22,7 @@ private:
 
     float* weights;  // Array to store edge weights
     
-    float* atd_results; // Average transport distance
-    float* d_atd_results;
+    
 
 
     void readDIMACS2Text(const char* filepath);
@@ -37,6 +36,9 @@ private:
     float* d_weights;  // GPU memory for weights
 
     float *d_apsp;
+
+    float* atd_results; // Average transport distance
+    float* d_atd_results;
 
 public:
     Graph(const char *_dir);

@@ -89,44 +89,53 @@ void Graph::computeAPSP() {
     }
 }
 
-__global__ void compute_atd_kernel(float* apsp, ui* neighbors, ept* neighbors_offset, float* atd_results, ui n, float alpha) {
-    int i = blockIdx.x;
-    int j = blockIdx.y;
+// __global__ void compute_atd_kernel(float* apsp, ui* neighbors, ept* neighbors_offset, float* atd_results, ui n, float alpha) {
+//     int i = blockIdx.x;
+//     int j = blockIdx.y;
     
-    if (i < n && j < n && i != j) {
-        ept start_i = neighbors_offset[i];
-        ept end_i = neighbors_offset[i + 1];
-        ept start_j = neighbors_offset[j];
-        ept end_j = neighbors_offset[j + 1];
+//     if (i < n && j < n && i != j) {
+//         ept start_i = neighbors_offset[i];
+//         ept end_i = neighbors_offset[i + 1];
+//         ept start_j = neighbors_offset[j];
+//         ept end_j = neighbors_offset[j + 1];
         
-        ui source_nbr_count = end_i - start_i;
-        ui target_nbr_count = end_j - start_j;
+//         ui source_nbr_count = end_i - start_i;
+//         ui target_nbr_count = end_j - start_j;
 
-        if (source_nbr_count == 0 || target_nbr_count == 0) {
-            atd_results[i * n + j] = apsp[i * n + j];  // Use APSP distance if no neighbors
-            return;
-        }
+//         if (source_nbr_count == 0 || target_nbr_count == 0) {
+//             atd_results[i * n + j] = apsp[i * n + j];  // Use APSP distance if no neighbors
+//             return;
+//         }
         
-        float share = (1.0f - alpha) / (source_nbr_count * target_nbr_count);
-        float cost_nbr = 0.0f;
+//         float share = (1.0f - alpha) / (source_nbr_count * target_nbr_count);
+//         float cost_nbr = 0.0f;
         
-        for (ept src = start_i; src < end_i; src++) {
-            for (ept tgt = start_j; tgt < end_j; tgt++) {
-                ui src_node = neighbors[src];
-                ui tgt_node = neighbors[tgt];
-                cost_nbr += apsp[src_node * n + tgt_node] * share;
-            }
-        }
+//         for (ept src = start_i; src < end_i; src++) {
+//             for (ept tgt = start_j; tgt < end_j; tgt++) {
+//                 ui src_node = neighbors[src];
+//                 ui tgt_node = neighbors[tgt];
+//                 cost_nbr += apsp[src_node * n + tgt_node] * share;
+//             }
+//         }
         
-        float cost_self = alpha * apsp[i * n + j];
-        atd_results[i * n + j] = cost_nbr + cost_self;
-    }
-    else if (i == j) {
-        atd_results[i * n + j] = 0.0f;  // ATD to self is 0
-    }
+//         float cost_self = alpha * apsp[i * n + j];
+//         atd_results[i * n + j] = cost_nbr + cost_self;
+//     }
+//     else if (i == j) {
+//         atd_results[i * n + j] = 0.0f;  // ATD to self is 0
+//     }
 
-    // Add a print statement (this will print to the console if you're using CUDA-GDB)
-    if (i == 0 && j == 0) {
-        printf("Kernel execution started. n = %u, alpha = %f\n", n, alpha);
+//     // Add a print statement (this will print to the console if you're using CUDA-GDB)
+//     if (i == 0 && j == 0) {
+//         printf("Kernel execution started. n = %u, alpha = %f\n", n, alpha);
+//     }
+// }
+
+__global__ void compute_atd_kernel(float* atd_results, ui n, float value) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = blockIdx.y * blockDim.y + threadIdx.y;
+    
+    if (i < n && j < n) {
+        atd_results[i * n + j] = value;
     }
 }
