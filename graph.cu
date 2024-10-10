@@ -366,13 +366,14 @@ void Graph::assignEdgeWeights() {
 void Graph::computeATD(float alpha) {
     cudaError_t err;
 
-    // Print debug information
+    std::cout << "Entering computeATD function" << std::endl;
     std::cout << "Computing ATD with n = " << n << ", alpha = " << alpha << std::endl;
     std::cout << "Device pointers: d_apsp = " << d_apsp << ", d_neighbors = " << d_neighbors 
               << ", d_neighbors_offset = " << d_neighbors_offset << std::endl;
 
     // Allocate device memory for ATD results if not already allocated
     if (d_atd_results == nullptr) {
+        std::cout << "Allocating memory for d_atd_results" << std::endl;
         err = cudaMalloc(&d_atd_results, n * n * sizeof(float));
         if (err != cudaSuccess) {
             std::cerr << "CUDA error (malloc d_atd_results): " << cudaGetErrorString(err) << std::endl;
@@ -383,8 +384,11 @@ void Graph::computeATD(float alpha) {
     // Set up grid and block dimensions
     dim3 grid_dim(n, n);
     dim3 block_dim(1, 1);  // Each thread computes one ATD value
+    std::cout << "Grid dimensions: (" << grid_dim.x << ", " << grid_dim.y << ")" << std::endl;
+    std::cout << "Block dimensions: (" << block_dim.x << ", " << block_dim.y << ")" << std::endl;
 
     // Launch ATD kernel
+    std::cout << "Launching ATD kernel" << std::endl;
     compute_atd_kernel<<<grid_dim, block_dim>>>(d_apsp, d_neighbors, d_neighbors_offset, 
                                                 d_atd_results, n, alpha);
 
@@ -395,6 +399,7 @@ void Graph::computeATD(float alpha) {
         return;
     }
 
+    std::cout << "Kernel launched successfully, synchronizing device" << std::endl;
     // Synchronize device
     err = cudaDeviceSynchronize();
     if (err != cudaSuccess) {
@@ -404,10 +409,12 @@ void Graph::computeATD(float alpha) {
 
     // Allocate host memory for ATD results if not already allocated
     if (atd_results == nullptr) {
+        std::cout << "Allocating host memory for ATD results" << std::endl;
         atd_results = new float[n * n];
     }
 
     // Copy results back to host
+    std::cout << "Copying results back to host" << std::endl;
     err = cudaMemcpy(atd_results, d_atd_results, n * n * sizeof(float), cudaMemcpyDeviceToHost);
     if (err != cudaSuccess) {
         std::cerr << "CUDA error (memcpy to host): " << cudaGetErrorString(err) << std::endl;

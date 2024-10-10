@@ -89,8 +89,7 @@ void Graph::computeAPSP() {
     }
 }
 
-__global__ void compute_atd_kernel(float* apsp, ui* neighbors, ept* neighbors_offset, 
-                                   float* atd_results, ui n, float alpha) {
+__global__ void compute_atd_kernel(float* apsp, ui* neighbors, ept* neighbors_offset, float* atd_results, ui n, float alpha) {
     int i = blockIdx.x;
     int j = blockIdx.y;
     
@@ -124,5 +123,10 @@ __global__ void compute_atd_kernel(float* apsp, ui* neighbors, ept* neighbors_of
     }
     else if (i == j) {
         atd_results[i * n + j] = 0.0f;  // ATD to self is 0
+    }
+
+    // Add a print statement (this will print to the console if you're using CUDA-GDB)
+    if (i == 0 && j == 0) {
+        printf("Kernel execution started. n = %u, alpha = %f\n", n, alpha);
     }
 }
