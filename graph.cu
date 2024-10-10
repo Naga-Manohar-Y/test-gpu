@@ -496,6 +496,6 @@ void Graph::computeATD(float alpha) {
     }
 }
 
-float Graph::getATD(unsigned int i, unsigned int j) const {
-    return atd_results[i * n + j];
-}
+// float Graph::getATD(unsigned int i, unsigned int j) const {
+//     return atd_results[i * n + j];
+// }

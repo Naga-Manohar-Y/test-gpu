@@ -61,6 +61,7 @@ void Graph::computeAPSP() {
     }
 
     // Set up grid and block dimensions
+    // default cuda kernel sets to block (32 * 32)
     dim3 block_dim(BLOCK_SIZE, BLOCK_SIZE);
     dim3 grid_dim((n + block_dim.x - 1) / block_dim.x, 
                   (n + block_dim.y - 1) / block_dim.y);
