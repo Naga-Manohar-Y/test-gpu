@@ -435,6 +435,13 @@ void Graph::computeATD(float alpha) {
     cudaError_t err;
 
     std::cout << "Computing ATD with n = " << n << ", alpha = " << alpha << std::endl;
+    std::cout << "Device pointers: d_apsp = " << d_apsp << ", d_neighbors = " << d_neighbors 
+              << ", d_neighbors_offset = " << d_neighbors_offset << std::endl;
+
+    if (d_apsp == nullptr || d_neighbors == nullptr || d_neighbors_offset == nullptr) {
+        std::cerr << "Error: One or more required device pointers are null" << std::endl;
+        return;
+    }
 
     if (d_atd_results == nullptr) {
         err = cudaMalloc(&d_atd_results, n * n * sizeof(float));
@@ -444,12 +451,13 @@ void Graph::computeATD(float alpha) {
         }
     }
 
-    dim3 block_dim(32, 32);
+    dim3 block_dim(8, 8);  // Reducing block size to fit your n
     dim3 grid_dim((n + block_dim.x - 1) / block_dim.x, (n + block_dim.y - 1) / block_dim.y);
 
     std::cout << "Grid dimensions: (" << grid_dim.x << ", " << grid_dim.y << ")" << std::endl;
     std::cout << "Block dimensions: (" << block_dim.x << ", " << block_dim.y << ")" << std::endl;
 
+    // Launch simplified kernel for testing
     compute_atd_kernel<<<grid_dim, block_dim>>>(d_atd_results, n, alpha);
 
     err = cudaGetLastError();
@@ -475,6 +483,15 @@ void Graph::computeATD(float alpha) {
     }
 
     std::cout << "ATD computation completed successfully." << std::endl;
+
+    // Print first few results for debugging
+    std::cout << "First few ATD results:" << std::endl;
+    for (int i = 0; i < std::min(5, (int)n); ++i) {
+        for (int j = 0; j < std::min(5, (int)n); ++j) {
+            std::cout << atd_results[i * n + j] << " ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 float Graph::getATD(unsigned int i, unsigned int j) const {
