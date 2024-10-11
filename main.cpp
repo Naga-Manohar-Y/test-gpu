@@ -44,6 +44,7 @@ int main() {
         // Compute ATD
         std::cout << "About to compute ATD" << std::endl;
         float alpha = 0.5; // Set your desired alpha value
+        
         g2.computeATD(alpha);
         std::cout << "ATD computation finished" << std::endl;
 

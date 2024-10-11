@@ -132,11 +132,11 @@ void Graph::computeAPSP() {
 //     }
 // }
 
-__global__ void compute_atd_kernel(float* atd_results, ui n, float alpha) {
+__global__ void compute_atd_kernel(float* d_atd_results, ui n, float alpha) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
     
     if (i < n && j < n) {
-        atd_results[i * n + j] = alpha;  // Simple test: assign alpha
+        d_atd_results[i * n + j] = alpha;  // Simple test: assign alpha
     }
 }
