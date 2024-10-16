@@ -63,6 +63,7 @@ public:
     }
 
     void computeATD(float alpha);
+    void computeATDCPU(float alpha);
     float getATD(unsigned int i, unsigned int j) const;
 
 
