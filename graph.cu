@@ -21,8 +21,8 @@
 using ui = unsigned int;
 const ui FILELEN = 1024;
 
-extern __global__ void compute_atd_kernel(float* apsp, ui* neighbors, ept* neighbors_offset, 
-                                          float* atd_results, ui n, float alpha);
+// extern __global__ void compute_atd_kernel(float* apsp, ui* neighbors, ept* neighbors_offset, 
+//                                           float* atd_results, ui n, float alpha);
 
 static int fileSuffixPos(char* filepath) {
     // finds the file extention in the file name
