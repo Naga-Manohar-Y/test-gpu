@@ -514,13 +514,13 @@ void Graph::computeATD(float alpha) {
     std::cout << "ATD computation completed successfully." << std::endl;
 
     // Print first few results for debugging
-    std::cout << "First few ATD results:" << std::endl;
-    for (int i = 0; i < std::min(5, (int)n); ++i) {
-        for (int j = 0; j < std::min(5, (int)n); ++j) {
-            std::cout << atd_results[i * n + j] << " ";
-        }
-        std::cout << std::endl;
-    }
+    // std::cout << "First few ATD results:" << std::endl;
+    // for (int i = 0; i < std::min(5, (int)n); ++i) {
+    //     for (int j = 0; j < std::min(5, (int)n); ++j) {
+    //         std::cout << atd_results[i * n + j] << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 }
 
 void Graph::computeATDCPU(float alpha) {
