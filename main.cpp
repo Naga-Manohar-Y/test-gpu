@@ -49,22 +49,22 @@ int main() {
         std::cout << "ATD computation finished" << std::endl;
 
         // Check if ATD computation was successful
-        if (g2.getATD(0, 0) == 0.0f) {
-            std::cout << "ATD computation successful." << std::endl;
-        } else {
-            std::cerr << "ATD computation may have failed." << std::endl;
-        }
+        // if (g2.getATD(0, 0) == 0.0f) {
+        //     std::cout << "ATD computation successful." << std::endl;
+        // } else {
+        //     std::cerr << "ATD computation may have failed." << std::endl;
+        // }
 
 
 
-        // Print sample ATD results
-        std::cout << "ATD Results (first 5x5 submatrix):" << std::endl;
-        for (unsigned int i = 0; i < std::min(5u, g2.getN()); i++) {
-            for (unsigned int j = 0; j < std::min(5u, g2.getN()); j++) {
-                std::cout << g2.getATD(i, j) << "\t";
-            }
-            std::cout << std::endl;
-        }
+        // // Print sample ATD results
+        // std::cout << "ATD Results (first 5x5 submatrix):" << std::endl;
+        // for (unsigned int i = 0; i < std::min(5u, g2.getN()); i++) {
+        //     for (unsigned int j = 0; j < std::min(5u, g2.getN()); j++) {
+        //         std::cout << g2.getATD(i, j) << "\t";
+        //     }
+        //     std::cout << std::endl;
+        // }
 
 
     } catch (const std::exception& e) {

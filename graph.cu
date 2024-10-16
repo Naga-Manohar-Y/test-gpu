@@ -472,42 +472,44 @@ void Graph::computeATD(float alpha) {
 
     std::cout << "Computing ATD with n = " << n << ", alpha = " << alpha << std::endl;
 
-    if (d_atd_results == nullptr) {
-        err = cudaMalloc(&d_atd_results, n * n * sizeof(float));
-        if (err != cudaSuccess) {
-            std::cerr << "CUDA error (malloc d_atd_results): " << cudaGetErrorString(err) << std::endl;
-            return;
-        }
-    }
+    computeATDCPU(alpha);
 
-    int threadsPerBlock = 256;
-    int blocksPerGrid = (n * n + threadsPerBlock - 1) / threadsPerBlock;
+    // if (d_atd_results == nullptr) {
+    //     err = cudaMalloc(&d_atd_results, n * n * sizeof(float));
+    //     if (err != cudaSuccess) {
+    //         std::cerr << "CUDA error (malloc d_atd_results): " << cudaGetErrorString(err) << std::endl;
+    //         return;
+    //     }
+    // }
 
-    std::cout << "Launching kernel with " << blocksPerGrid << " blocks of " << threadsPerBlock << " threads each" << std::endl;
+    // int threadsPerBlock = 256;
+    // int blocksPerGrid = (n * n + threadsPerBlock - 1) / threadsPerBlock;
 
-    compute_atd_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_atd_results, n, alpha);
+    // std::cout << "Launching kernel with " << blocksPerGrid << " blocks of " << threadsPerBlock << " threads each" << std::endl;
 
-    err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        std::cerr << "CUDA error (kernel launch): " << cudaGetErrorString(err) << std::endl;
-        return;
-    }
+    // compute_atd_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_atd_results, n, alpha);
 
-    err = cudaDeviceSynchronize();
-    if (err != cudaSuccess) {
-        std::cerr << "CUDA error (synchronize): " << cudaGetErrorString(err) << std::endl;
-        return;
-    }
+    // err = cudaGetLastError();
+    // if (err != cudaSuccess) {
+    //     std::cerr << "CUDA error (kernel launch): " << cudaGetErrorString(err) << std::endl;
+    //     return;
+    // }
 
-    if (atd_results == nullptr) {
-        atd_results = new float[n * n];
-    }
+    // err = cudaDeviceSynchronize();
+    // if (err != cudaSuccess) {
+    //     std::cerr << "CUDA error (synchronize): " << cudaGetErrorString(err) << std::endl;
+    //     return;
+    // }
 
-    err = cudaMemcpy(atd_results, d_atd_results, n * n * sizeof(float), cudaMemcpyDeviceToHost);
-    if (err != cudaSuccess) {
-        std::cerr << "CUDA error (memcpy to host): " << cudaGetErrorString(err) << std::endl;
-        return;
-    }
+    // if (atd_results == nullptr) {
+    //     atd_results = new float[n * n];
+    // }
+
+    // err = cudaMemcpy(atd_results, d_atd_results, n * n * sizeof(float), cudaMemcpyDeviceToHost);
+    // if (err != cudaSuccess) {
+    //     std::cerr << "CUDA error (memcpy to host): " << cudaGetErrorString(err) << std::endl;
+    //     return;
+    // }
 
     std::cout << "ATD computation completed successfully." << std::endl;
 
@@ -519,6 +521,50 @@ void Graph::computeATD(float alpha) {
         }
         std::cout << std::endl;
     }
+}
+
+void Graph::computeATDCPU(float alpha) {
+    if (atd_results == nullptr) {
+        atd_results = new float[n * n];
+    }
+
+    for (ui i = 0; i < n; i++) {
+        for (ui j = 0; j < n; j++) {
+            if (i == j) {
+                atd_results[i * n + j] = 0.0f;
+                continue;
+            }
+
+            ept start_i = neighbors_offset[i];
+            ept end_i = neighbors_offset[i + 1];
+            ept start_j = neighbors_offset[j];
+            ept end_j = neighbors_offset[j + 1];
+
+            ui source_nbr_count = end_i - start_i;
+            ui target_nbr_count = end_j - start_j;
+
+            if (source_nbr_count == 0 || target_nbr_count == 0) {
+                atd_results[i * n + j] = apsp[i * n + j];
+                continue;
+            }
+
+            float share = (1.0f - alpha) / (source_nbr_count * target_nbr_count);
+            float cost_nbr = 0.0f;
+            float cost_self = alpha * apsp[i * n + j];
+
+            for (ept src = start_i; src < end_i; src++) {
+                for (ept tgt = start_j; tgt < end_j; tgt++) {
+                    ui src_node = neighbors[src];
+                    ui tgt_node = neighbors[tgt];
+                    cost_nbr += apsp[src_node * n + tgt_node] * share;
+                }
+            }
+
+            atd_results[i * n + j] = cost_nbr + cost_self;
+        }
+    }
+
+    std::cout << "CPU ATD computation completed." << std::endl;
 }
 
 float Graph::getATD(unsigned int i, unsigned int j) const {
