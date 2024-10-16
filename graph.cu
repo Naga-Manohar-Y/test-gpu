@@ -307,13 +307,49 @@ void Graph::readRawSNAPText(const char* filepath) {
 }
 
 void Graph::mallocGraphGPUMemory() {
-    cudaMalloc(&d_neighbors_offset, (n + 1) * sizeof(ept));
-    cudaMalloc(&d_neighbors, m * sizeof(ui));
-    cudaMalloc(&d_degree, n * sizeof(ui));
-	cudaMalloc(&d_weights, m * sizeof(float));
-    // cudaMalloc(&d_apsp, n * n * sizeof(float));
+    // cudaMalloc(&d_neighbors_offset, (n + 1) * sizeof(ept));
+    // cudaMalloc(&d_neighbors, m * sizeof(ui));
+    // cudaMalloc(&d_degree, n * sizeof(ui));
+	// cudaMalloc(&d_weights, m * sizeof(float));
+    // // cudaMalloc(&d_apsp, n * n * sizeof(float));
 
-	cudaMalloc(&d_atd_results, n * n * sizeof(float));
+	// cudaMalloc(&d_atd_results, n * n * sizeof(float));
+
+    cudaError_t err;
+
+    err = cudaMalloc(&d_neighbors_offset, (n + 1) * sizeof(ept));
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA error (malloc d_neighbors_offset): " << cudaGetErrorString(err) << std::endl;
+        return;
+    }
+
+    err = cudaMalloc(&d_neighbors, m * sizeof(ui));
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA error (malloc d_neighbors): " << cudaGetErrorString(err) << std::endl;
+        return;
+    }
+
+    err = cudaMalloc(&d_degree, n * sizeof(ui));
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA error (malloc d_degree): " << cudaGetErrorString(err) << std::endl;
+        return;
+    }
+
+    err = cudaMalloc(&d_weights, m * sizeof(float));
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA error (malloc d_weights): " << cudaGetErrorString(err) << std::endl;
+        return;
+    }
+
+    err = cudaMalloc(&d_atd_results, n * n * sizeof(float));
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA error (malloc d_atd_results): " << cudaGetErrorString(err) << std::endl;
+        return;
+    }
+
+    std::cout << "GPU memory allocation successful." << std::endl;
+
+
 }
 
 void Graph::freeGraphGPUMemory() {
@@ -435,13 +471,6 @@ void Graph::computeATD(float alpha) {
     cudaError_t err;
 
     std::cout << "Computing ATD with n = " << n << ", alpha = " << alpha << std::endl;
-    std::cout << "Device pointers: d_apsp = " << d_apsp << ", d_neighbors = " << d_neighbors 
-              << ", d_neighbors_offset = " << d_neighbors_offset << std::endl;
-
-    if (d_apsp == nullptr || d_neighbors == nullptr || d_neighbors_offset == nullptr) {
-        std::cerr << "Error: One or more required device pointers are null" << std::endl;
-        return;
-    }
 
     if (d_atd_results == nullptr) {
         err = cudaMalloc(&d_atd_results, n * n * sizeof(float));
@@ -451,16 +480,12 @@ void Graph::computeATD(float alpha) {
         }
     }
 
-    dim3 block_dim(8, 8);  // Reducing block size to fit your n
-    dim3 grid_dim((n + block_dim.x - 1) / block_dim.x, (n + block_dim.y - 1) / block_dim.y);
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (n * n + threadsPerBlock - 1) / threadsPerBlock;
 
-    std::cout << "Grid dimensions: (" << grid_dim.x << ", " << grid_dim.y << ")" << std::endl;
-    std::cout << "Block dimensions: (" << block_dim.x << ", " << block_dim.y << ")" << std::endl;
+    std::cout << "Launching kernel with " << blocksPerGrid << " blocks of " << threadsPerBlock << " threads each" << std::endl;
 
-	cudaMemset(d_atd_results, 0, n * n * sizeof(float));
-
-    // Launch simplified kernel for testing
-    compute_atd_kernel<<<grid_dim, block_dim>>>(d_atd_results, n, alpha);
+    compute_atd_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_atd_results, n, alpha);
 
     err = cudaGetLastError();
     if (err != cudaSuccess) {
